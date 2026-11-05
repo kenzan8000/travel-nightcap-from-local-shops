@@ -1,0 +1,164 @@
+{
+  "place": {
+    "query": "Helsinki, Finland",
+    "name": "Helsinki",
+    "slug": "helsinki",
+    "user_language": "en",
+    "local_language": "fi",
+    "currency": "EUR"
+  },
+  "buying_rules": [
+    "Supermarkets and kiosks sell drinks up to 5.5% ABV, and fermented drinks such as wine up to 8%. Anything stronger is sold only at the state shop Alko.",
+    "Minimum age is 18, or 20 for drinks over 22% at Alko. Expect to show ID.",
+    "Cans and bottles carry a deposit (*pantti*), refunded at the return machines in supermarkets."
+  ],
+  "drinks": [
+    {
+      "id": "sandels",
+      "kind": "product",
+      "name": "Sandels",
+      "local_name": "Sandels",
+      "type": "Lager",
+      "producer": "Olvi",
+      "origin": "Iisalmi",
+      "abv": 4.7,
+      "sizes": [
+        {"ml": 330, "container": "can", "price": "~1.5-2 EUR"},
+        {"ml": 500, "container": "can", "price": "~2-3 EUR"}
+      ],
+      "made_from": "Barley malt, hops, water",
+      "how_made": "A bottom-fermented pale lager from Olvi, one of the last large family-owned Finnish breweries.",
+      "taste": "Light and malty with mild bitterness.",
+      "pairs_with": ["ruislastut"],
+      "where_to_buy": "Any supermarket or kiosk",
+      "opening": "Can",
+      "tips": "A blogger's everyday pick for a cheap, reliable local beer.",
+      "local_terms": [{"term": "olut", "meaning": "beer", "pronunciation": "OH-lut"}],
+      "sources": ["https://example.com/helsinki-supermarket-beer"],
+      "images": [
+        "https://example.com/missing-sandels.jpg",
+        "https://commons.wikimedia.org/wiki/Special:FilePath/Sandels_beer.jpg?width=480"
+      ]
+    },
+    {
+      "id": "lonkero",
+      "kind": "product",
+      "name": "Hartwall Original Long Drink (lonkero)",
+      "local_name": "Hartwall Original Long Drink",
+      "type": "Long drink",
+      "producer": "Hartwall",
+      "origin": "Finland",
+      "abv": 5.5,
+      "sizes": [{"ml": 330, "container": "can", "price": "~2-3 EUR"}],
+      "made_from": "Gin and grapefruit soda",
+      "how_made": "Gin mixed with grapefruit soda. The long drink was introduced for the 1952 Helsinki Olympics, and Finns call it *lonkero*.",
+      "taste": "Sweet, citrusy and fizzy, with a light juniper note.",
+      "pairs_with": ["salmiakki"],
+      "where_to_buy": "Any supermarket or kiosk",
+      "opening": "Can",
+      "tips": "Several posts call it the drink to try first in Finland.",
+      "local_terms": [{"term": "lonkero", "meaning": "tentacle (slang for long drink)", "pronunciation": "LON-keh-ro"}],
+      "sources": ["https://example.com/helsinki-supermarket-beer", "https://example.com/living-in-helsinki"],
+      "images": ["https://commons.wikimedia.org/wiki/Special:FilePath/Lonkero_(15246979106).jpg?width=480"]
+    },
+    {
+      "id": "berry-wine",
+      "kind": "style",
+      "name": "Finnish berry wine (marjaviini)",
+      "local_name": "marjaviini",
+      "type": "Fruit wine",
+      "origin": "Small Finnish wineries",
+      "abv": [8, 13],
+      "sizes": [
+        {"ml": 375, "container": "half bottle", "price": "~8-12 EUR"},
+        {"ml": 750, "container": "bottle", "price": "~12-20 EUR"}
+      ],
+      "made_from": "Currants, lingonberries, crowberries or other Nordic berries",
+      "how_made": "Fermented from berry juice instead of grapes, often by small country wineries.",
+      "taste": "Fruity and tart; dry and sweet versions exist.",
+      "pairs_with": ["ruislastut"],
+      "where_to_buy": "Alko (stronger than 8%)",
+      "opening": "Screw cap or cork",
+      "label_hints": [
+        {"term": "kuiva", "meaning": "dry"},
+        {"term": "makea", "meaning": "sweet"},
+        {"term": "herukka", "meaning": "currant"}
+      ],
+      "tips": "One local blogger recommends asking Alko staff for a dry currant wine.",
+      "sources": ["https://example.com/living-in-helsinki"],
+      "images": []
+    }
+  ],
+  "snacks": [
+    {
+      "id": "ruislastut",
+      "kind": "style",
+      "name": "Rye crisps (ruislastut)",
+      "local_name": "ruislastut",
+      "type": "Savoury crisps",
+      "origin": "Finland",
+      "pack_size": "~150 g bag",
+      "price": "~2-3 EUR",
+      "made_from": "Rye bread",
+      "how_made": "Thin slices of sour rye bread, baked or fried until crunchy and seasoned.",
+      "taste": "Sour, salty and very crunchy.",
+      "pairs_with": ["sandels", "berry-wine"],
+      "where_to_buy": "Any supermarket, in the crisps aisle",
+      "label_hints": [{"term": "ruis", "meaning": "rye"}, {"term": "suola", "meaning": "salt"}],
+      "local_terms": [{"term": "lastu", "meaning": "chip, shaving"}],
+      "sources": ["https://example.com/helsinki-supermarket-beer"],
+      "images": [],
+      "image_search_query": "ruislastut pussi"
+    },
+    {
+      "id": "salmiakki",
+      "kind": "style",
+      "name": "Salty liquorice (salmiakki)",
+      "local_name": "salmiakki",
+      "type": "Sweets",
+      "origin": "Finland",
+      "pack_size": "~150-250 g bag",
+      "price": "~2-4 EUR",
+      "made_from": "Liquorice extract and ammonium chloride",
+      "how_made": "Liquorice candy flavoured with ammonium chloride (*salmiakki*), which gives it a salty, tongue-tingling bite.",
+      "taste": "Salty and bitter-sweet. Love it or hate it.",
+      "pairs_with": ["lonkero"],
+      "where_to_buy": "Any supermarket, sweets aisle",
+      "local_terms": [{"term": "salmiakki", "meaning": "ammonium chloride; salty liquorice"}],
+      "sources": ["https://example.com/living-in-helsinki"],
+      "images": ["https://commons.wikimedia.org/wiki/Special:FilePath/Salmiakki_candies.jpg?width=480"]
+    }
+  ],
+  "shop_phrases": [
+    {"phrase": "Missä on olutta?", "pronunciation": "MIS-sa on OH-lut-ta", "meaning": "Where is the beer?"},
+    {"phrase": "Kiitos", "pronunciation": "KEE-tos", "meaning": "Thank you"}
+  ],
+  "sources": [
+    {
+      "url": "https://example.com/helsinki-supermarket-beer",
+      "title": "What we drank from Helsinki supermarkets",
+      "author": "Jane Doe",
+      "date": "2025-06-14",
+      "language": "en",
+      "kind": "traveller blog",
+      "status": "used",
+      "reason": "First-person trip report with own photos of shop shelves"
+    },
+    {
+      "url": "https://example.com/living-in-helsinki",
+      "title": "Ten years in Helsinki: my shop favourites",
+      "author": "Matti Meikäläinen",
+      "date": "2024-11-02",
+      "language": "fi",
+      "kind": "resident blog",
+      "status": "used",
+      "reason": "Resident's own recommendations with details"
+    },
+    {
+      "url": "https://example.com/top-20-finnish-drinks",
+      "title": "Top 20 Finnish drinks",
+      "status": "rejected",
+      "reason": "SEO listicle, no author, no first-hand detail"
+    }
+  ]
+}
