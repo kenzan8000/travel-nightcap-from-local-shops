@@ -83,7 +83,11 @@ spirits, and so on. For strong alcohol prefer small sizes (for example 50 ml or 
 bottles), but larger ones can be recommended too.
 
 Snacks can be anything from a local shop, including chilled items such as cheese or
-cured fish.
+cured fish, as long as it is **ready to eat in a hotel room as bought**. There is no
+kitchen: no pan, grill, oven or microwave. Leave out raw or cook-before-eating items
+(fresh sausages, frozen food, instant noodles). If a dish is famous but needs cooking,
+include its ready-to-eat form only when shops sell one (for example a cold-cut or
+tinned version), and describe only that form.
 
 ## Step 4: Decide how many
 
@@ -123,17 +127,28 @@ Also collect, for the place:
 
 ### Photos
 
-List image URLs in `images`, best first. Each must point directly at an image file.
+Every item needs a photo; the output never shows a link instead of one. List image
+URLs in `images`, best first, and give each item several candidates from different
+sites, because some will not embed in chat apps.
 
 1. The official product image from the producer or a local retailer. Search in the
    local language.
-2. Wikimedia Commons. Use
-   `https://commons.wikimedia.org/wiki/Special:FilePath/<File_name.jpg>?width=480`.
-3. A photo from one of the source posts.
+2. Open Food Facts (`world.openfoodfacts.org`), which has photos of supermarket
+   packs, including many drinks and condiments. Use the
+   `https://images.openfoodfacts.org/images/products/...` URL of a front photo at 400 px.
+3. Wikimedia Commons. Use the direct `https://upload.wikimedia.org/...` thumbnail URL
+   (about 480 px wide), not the `commons.wikimedia.org/wiki/File:` page.
+4. A photo from one of the source posts.
 
-For a `style`, use a photo that shows a typical example. If no image is found, leave
-`images` empty and set `image_search_query` (local language) so the output links to an
-image search instead.
+For a `style`, use a photo of a typical example, such as the pack of one of its
+`examples`. If an item still has no image, keep searching in the local language
+(product name plus words like "pack", "bottle", "can") before giving up.
+
+Each URL must:
+
+- start with `https://`;
+- point directly at a JPEG, PNG, WebP or GIF file, not a web page, SVG or AVIF;
+- be a thumbnail-sized file, under about 1.5 MB.
 
 ## Step 6: Write the JSON
 
@@ -173,7 +188,7 @@ Step 7.
       "pairs_with": ["sandels"], "where_to_buy": "Any supermarket",
       "label_hints": [{"term": "ruis", "meaning": "rye"}],
       "examples": [],
-      "sources": ["https://..."], "images": [], "image_search_query": "ruislastut pussi"
+      "sources": ["https://..."], "images": ["https://...", "https://..."]
     }
   ],
   "shop_phrases": [{"phrase": "Kiitos", "pronunciation": "KEE-tos", "meaning": "Thank you"}],
@@ -196,7 +211,7 @@ Step 7.
   `where_to_buy` Where to buy, `opening` Opening, `made_from` Made from, `how_made`
   How it's made, `taste` Taste, `goes_with` Goes with, `look_for` Look for on the
   label, `examples` Examples, `tips` From the sources, `local_terms` Local terms,
-  `item_sources` Sources, `image_search` Image search.
+  `item_sources` Sources.
 
 ## Step 7: Render
 
@@ -211,21 +226,23 @@ python3 scripts/render_nightcap.py /tmp/travel-nightcap-<slug>.json
 
 It prints Markdown to stdout and warnings to stderr. It:
 
-- tries each `images` URL in order and keeps the first one that loads as an image;
-  otherwise it links to an image search;
+- tries each `images` URL in order the way a chat app would embed it (from another
+  site, following redirects), keeps the first that passes the rules above, and
+  outputs its final direct URL;
 - computes grams of pure alcohol per container (`ml × ABV / 100 × 0.789`) and drinks
   of 10 g;
 - leaves out items with no used source, and warns about unknown `pairs_with` ids.
 
-Read the warnings. Fix what you can in the JSON (for example, find another image) and
-rerun. If the script says no image could be reached, the environment where you run
+Read the warnings. Every "no working image" warning means an item would show without
+a photo: add candidates from other sites in the Photos order and rerun until each
+item has one. If the script says no image could be reached, the environment where you run
 scripts probably has no internet access. Check the image URLs with your browsing
 tool, remove the ones that do not show the item, and rerun with `--no-check-images`.
 
 ### Without the script (manual path)
 
-1. Open each image URL; keep the first that shows the right item. Otherwise link to
-   `https://www.google.com/search?tbm=isch&q=<image_search_query>`.
+1. Open each image URL; keep the first that shows the right item and follows the
+   rules in Photos. Use the final URL after any redirect.
 2. For each drink size, compute `ml × ABV / 100 × 0.789` grams, rounded, and divide by
    10 for drinks. For a style use the low and high ABV.
 3. Write the Markdown in the layout of Step 8. Escape `(`, `)` and spaces in URLs as

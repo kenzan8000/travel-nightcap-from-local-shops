@@ -12,7 +12,7 @@ drink, and snacks follow in the same way. Each card has:
 
 | Field | Content |
 | --- | --- |
-| Photo | Official product image, Wikimedia Commons, or a source post's photo, checked to load; otherwise an image-search link |
+| Photo | Official product image, Open Food Facts, Wikimedia Commons, or a source post's photo, checked to embed from another site |
 | Name | Local name, with your language's name when it helps |
 | ABV, sizes, price | Typical containers and a rough local price |
 | Alcohol | Grams of pure alcohol per container, and drinks of 10 g |

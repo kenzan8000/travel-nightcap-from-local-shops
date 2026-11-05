@@ -86,7 +86,7 @@
       ],
       "tips": "One local blogger recommends asking Alko staff for a dry currant wine.",
       "sources": ["https://example.com/living-in-helsinki"],
-      "images": []
+      "images": ["https://commons.wikimedia.org/wiki/Special:FilePath/Cranberry_wine_light.jpg?width=480"]
     }
   ],
   "snacks": [
@@ -107,8 +107,8 @@
       "label_hints": [{"term": "ruis", "meaning": "rye"}, {"term": "suola", "meaning": "salt"}],
       "local_terms": [{"term": "lastu", "meaning": "chip, shaving"}],
       "sources": ["https://example.com/helsinki-supermarket-beer"],
-      "images": [],
-      "image_search_query": "ruislastut pussi"
+      "examples": ["Vaasan Ruis Nacho"],
+      "images": ["https://images.openfoodfacts.org/images/products/643/700/506/5699/front_fi.17.400.jpg"]
     },
     {
       "id": "salmiakki",

@@ -17,15 +17,24 @@ import concurrent.futures
 import json
 import sys
 import urllib.error
-import urllib.parse
 import urllib.request
 
 ETHANOL_DENSITY = 0.789
 GRAMS_PER_DRINK = 10
 USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 "
+    "(KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1"
 )
+IMAGE_REQUEST_HEADERS = {
+    "User-Agent": USER_AGENT,
+    "Accept": "image/webp,image/png,image/jpeg,image/*;q=0.8",
+    "Referer": "https://cursor.com/",
+    "Sec-Fetch-Dest": "image",
+    "Sec-Fetch-Mode": "no-cors",
+    "Sec-Fetch-Site": "cross-site",
+}
+EMBEDDABLE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+MAX_IMAGE_BYTES = 1_500_000
 
 DEFAULT_LABELS = {
     "buying_rules": "Buying rules",
@@ -49,7 +58,6 @@ DEFAULT_LABELS = {
     "tips": "From the sources",
     "local_terms": "Local terms",
     "item_sources": "Sources",
-    "image_search": "Image search",
 }
 
 
@@ -114,21 +122,49 @@ def size_label(size: dict) -> str:
     return " ".join(parts)
 
 
-def check_image(url: str, timeout: float) -> str:
-    """Return "ok", "bad" (the server answered, but not with an image) or "unreachable"."""
-    request = urllib.request.Request(
-        url, headers={"User-Agent": USER_AGENT, "Range": "bytes=0-2047", "Accept": "image/*"}
+def sniff_image(head: bytes) -> bool:
+    return (
+        head.startswith(b"\xff\xd8\xff")
+        or head.startswith(b"\x89PNG\r\n\x1a\n")
+        or head.startswith((b"GIF87a", b"GIF89a"))
+        or (head[:4] == b"RIFF" and head[8:12] == b"WEBP")
     )
+
+
+def check_image(url: str, timeout: float) -> tuple[str, str, str]:
+    """Return (result, final_url, reason). result is "ok", "bad" or "unreachable".
+
+    The request imitates a chat app embedding the image from another site, so images
+    that only load on their own site (hotlink protection, Cross-Origin-Resource-Policy)
+    are rejected. The final URL after redirects is returned, because some chat apps do
+    not follow redirects for embedded images.
+    """
+    if not url.startswith("https://"):
+        return "bad", url, "not https (many chat apps block http images)"
+    request = urllib.request.Request(md_url(url), headers=IMAGE_REQUEST_HEADERS)
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
-            content_type = response.headers.get("Content-Type", "")
-            if response.status not in (200, 206) or not content_type.startswith("image/"):
-                return "bad"
-            return "ok" if response.read(64) else "bad"
-    except (urllib.error.HTTPError, ValueError):
-        return "bad"
+            final_url = response.geturl()
+            content_type = response.headers.get("Content-Type", "").split(";")[0].strip().lower()
+            corp = response.headers.get("Cross-Origin-Resource-Policy", "").strip().lower()
+            length = response.headers.get("Content-Length", "")
+            if not final_url.startswith("https://"):
+                return "bad", final_url, "redirects to http"
+            if content_type not in EMBEDDABLE_TYPES:
+                return "bad", final_url, f"content type {content_type or 'missing'}"
+            if corp in ("same-origin", "same-site"):
+                return "bad", final_url, f"Cross-Origin-Resource-Policy: {corp}"
+            if length.isdigit() and int(length) > MAX_IMAGE_BYTES:
+                return "bad", final_url, f"too large ({int(length) // 1024} KB); use a smaller thumbnail"
+            if not sniff_image(response.read(16)):
+                return "bad", final_url, "body is not an image"
+            return "ok", final_url, ""
+    except urllib.error.HTTPError as error:
+        return "bad", url, f"HTTP {error.code}"
+    except ValueError as error:
+        return "bad", url, str(error)
     except (urllib.error.URLError, TimeoutError, OSError):
-        return "unreachable"
+        return "unreachable", url, "could not be reached"
 
 
 def choose_images(items: list[dict], check: bool, timeout: float) -> dict[str, str | None]:
@@ -142,11 +178,11 @@ def choose_images(items: list[dict], check: bool, timeout: float) -> dict[str, s
     def first_working(item: dict) -> tuple[str | None, list[str]]:
         results = []
         for url in item.get("images") or []:
-            result = check_image(url, timeout)
+            result, final_url, reason = check_image(url, timeout)
             results.append(result)
             if result == "ok":
-                return url, results
-            warn(f"{item['id']}: image {'could not be reached' if result == 'unreachable' else 'did not load as an image'}: {url}")
+                return final_url, results
+            warn(f"{item['id']}: image rejected ({reason}): {url}")
         return None, results
 
     all_results: list[str] = []
@@ -161,11 +197,6 @@ def choose_images(items: list[dict], check: bool, timeout: float) -> dict[str, s
             "and rerun with --no-check-images."
         )
     return chosen
-
-
-def image_search_url(item: dict, place: dict) -> str:
-    query = item.get("image_search_query") or f"{item.get('local_name') or item['name']} {place.get('query', '')}"
-    return "https://www.google.com/search?tbm=isch&q=" + urllib.parse.quote_plus(query.strip())
 
 
 def terms_text(terms: list[dict]) -> str:
@@ -208,7 +239,6 @@ def render_card(
     image: str | None,
     names_by_id: dict[str, str],
     source_numbers: dict[str, int],
-    place: dict,
     labels: dict,
 ) -> list[str]:
     lines = [f"### {item['name']}", ""]
@@ -216,7 +246,7 @@ def render_card(
     if image:
         lines += [f"![{alt}]({md_url(image)})", ""]
     else:
-        lines += [f"[{labels['image_search']}: {alt}]({image_search_url(item, place)})", ""]
+        warn(f"{item['id']}: no working image; find one (see Photos in SKILL.md) and rerun")
 
     summary = [item.get("type", "")]
     if is_drink:
@@ -299,7 +329,6 @@ def keep_items(items: list[dict], used_urls: set[str], kind: str) -> list[dict]:
 
 def render(data: dict, check_images: bool, timeout: float) -> str:
     labels = {**DEFAULT_LABELS, **(data.get("labels") or {})}
-    place = data.get("place") or {}
     sources = data.get("sources") or []
     used = [s for s in sources if s.get("status") == "used" and s.get("url")]
     rejected = [s for s in sources if s.get("status") == "rejected"]
@@ -324,7 +353,7 @@ def render(data: dict, check_images: bool, timeout: float) -> str:
         out += render_overview(items, is_drink, labels)
         out.append("")
         for item in items:
-            out += render_card(item, is_drink, images.get(item["id"]), names_by_id, source_numbers, place, labels)
+            out += render_card(item, is_drink, images.get(item["id"]), names_by_id, source_numbers, labels)
 
     if data.get("shop_phrases"):
         out += [f"## {labels['shop_phrases']}", ""]
