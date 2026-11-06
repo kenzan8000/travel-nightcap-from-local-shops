@@ -2,8 +2,8 @@
 """Render a nightcap list (local drinks and snacks) from JSON to Markdown.
 
 Checks each item's image candidates in order and keeps the first one that loads
-as an image, rewrites it to a GitHub image proxy URL so Cursor's web and mobile
-apps show it, computes grams of pure alcohol per container, and prints Markdown
+as an image, rewrites it to a GitHub image proxy URL so chat apps that only trust
+a few image hosts show it, computes grams of pure alcohol per container, and prints Markdown
 for the chat. Warnings go to stderr.
 
 Usage:
@@ -31,7 +31,7 @@ USER_AGENT = (
 IMAGE_REQUEST_HEADERS = {
     "User-Agent": USER_AGENT,
     "Accept": "image/webp,image/png,image/jpeg,image/*;q=0.8",
-    "Referer": "https://cursor.com/",
+    "Referer": "https://example.com/",
     "Sec-Fetch-Dest": "image",
     "Sec-Fetch-Mode": "no-cors",
     "Sec-Fetch-Site": "cross-site",
@@ -174,9 +174,9 @@ def check_image(url: str, timeout: float) -> tuple[str, str, str]:
 def github_proxy_url(url: str, timeout: float) -> str | None:
     """Return GitHub's camo proxy URL for an image, or None if GitHub can't be reached.
 
-    Cursor's web and mobile apps only load chat images from an allowlist of hosts,
-    which includes camo.githubusercontent.com. GitHub's Markdown API rewrites image
-    URLs to signed camo URLs without uploading anything.
+    Some chat apps, often on mobile and web, only load images from an allowlist of
+    hosts, and camo.githubusercontent.com is commonly on it. GitHub's Markdown API
+    rewrites image URLs to signed camo URLs without uploading anything.
     """
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "travel-nightcap-from-local-shops"}
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
@@ -188,7 +188,7 @@ def github_proxy_url(url: str, timeout: float) -> str | None:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             html = response.read().decode("utf-8", "replace")
     except (urllib.error.URLError, TimeoutError, OSError) as error:
-        warn(f"GitHub Markdown API failed ({error}); photos will only show in the desktop app")
+        warn(f"GitHub Markdown API failed ({error}); photos may not show in apps that only trust a few image hosts")
         return None
     match = re.search(r'<img src="(https://camo\.githubusercontent\.com/[^"]+)"', html)
     return match.group(1) if match else None
@@ -430,7 +430,7 @@ def main() -> int:
     parser.add_argument("--no-check-images", action="store_true", help="use the first image candidate unchecked")
     parser.add_argument(
         "--no-proxy", action="store_true",
-        help="output original image URLs instead of GitHub proxy URLs (photos then show only in the desktop app)",
+        help="output original image URLs instead of GitHub proxy URLs (photos may then not show in apps that only trust a few image hosts)",
     )
     parser.add_argument("--timeout", type=float, default=8.0, help="seconds per image request (default 8)")
     args = parser.parse_args()

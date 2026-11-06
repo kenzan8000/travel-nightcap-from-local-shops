@@ -229,9 +229,9 @@ It prints Markdown to stdout and warnings to stderr. It:
 - tries each `images` URL in order the way a chat app would embed it (from another
   site, following redirects) and keeps the first that passes the rules above;
 - rewrites that photo to a `https://camo.githubusercontent.com/...` URL through
-  GitHub's Markdown API. Cursor's web and mobile apps only show chat images from an
-  allowlist of hosts, and GitHub's image proxy is on it; other image hosts only show
-  in the desktop app. Set `GITHUB_TOKEN` or `GH_TOKEN` to raise GitHub's rate limit;
+  GitHub's Markdown API. Some chat apps, often on mobile and web, only show images
+  from a short list of trusted hosts, and GitHub's image proxy is commonly on it;
+  everywhere else the photo shows as usual. Set `GITHUB_TOKEN` or `GH_TOKEN` to raise GitHub's rate limit;
   without one it allows 60 requests an hour;
 - computes grams of pure alcohol per container (`ml × ABV / 100 × 0.789`) and drinks
   of 10 g;
