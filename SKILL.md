@@ -123,7 +123,6 @@ Also collect, for the place:
 - `buying_rules`: 2 to 5 facts that matter when buying: which shops sell which
   strength, sales hours, minimum age, can and bottle deposit. Only confirmed facts,
   from official or first-hand sources.
-- `shop_phrases`: 2 to 5 local phrases or words that help in the shop.
 
 ### Photos
 
@@ -191,7 +190,6 @@ Step 7.
       "sources": ["https://..."], "images": ["https://...", "https://..."]
     }
   ],
-  "shop_phrases": [{"phrase": "Kiitos", "pronunciation": "KEE-tos", "meaning": "Thank you"}],
   "sources": [
     {"url": "https://...", "title": "...", "author": "...", "date": "2025-06-14",
      "language": "en", "kind": "traveller blog", "status": "used", "reason": "..."},
@@ -205,7 +203,7 @@ Step 7.
 - Leave out any field you could not confirm. Do not fill it with a guess.
 - `labels`: when the user's language is not English, translate the output headings.
   Keys and English defaults: `buying_rules` Buying rules, `drinks` Drinks, `snacks`
-  Snacks, `shop_phrases` Shop phrases, `sources` Sources, `rejected_sources` Rejected
+  Snacks, `sources` Sources, `rejected_sources` Rejected
   sources, `typically` typically, `drinks_unit` drinks, `alcohol_note` "g = grams of
   pure alcohol per container; 1 drink = {grams} g.", `sizes` Sizes,
   `where_to_buy` Where to buy, `opening` Opening, `made_from` Made from, `how_made`
@@ -265,8 +263,7 @@ screen, with no tables:
    its price and grams of alcohol. Then one card per drink.
 3. **Snacks**: a numbered overview, one line per snack with type, pack size and
    price. Then one card per snack.
-4. **Shop phrases**.
-5. **Sources**: used sources numbered, then rejected sources with reasons.
+4. **Sources**: used sources numbered, then rejected sources with reasons.
 
 An overview line looks like this:
 

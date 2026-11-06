@@ -44,7 +44,6 @@ DEFAULT_LABELS = {
     "buying_rules": "Buying rules",
     "drinks": "Drinks",
     "snacks": "Snacks",
-    "shop_phrases": "Shop phrases",
     "sources": "Sources",
     "rejected_sources": "Rejected sources",
     "typically": "typically",
@@ -390,17 +389,6 @@ def render(data: dict, check_images: bool, proxy_images: bool, timeout: float) -
         out.append("")
         for item in items:
             out += render_card(item, is_drink, images.get(item["id"]), names_by_id, source_numbers, labels)
-
-    if data.get("shop_phrases"):
-        out += [f"## {labels['shop_phrases']}", ""]
-        for phrase in data["shop_phrases"]:
-            text = f"- **{phrase.get('phrase', '')}**"
-            if phrase.get("pronunciation"):
-                text += f" ({phrase['pronunciation']})"
-            if phrase.get("meaning"):
-                text += f": {phrase['meaning']}"
-            out.append(text)
-        out.append("")
 
     if used:
         out += [f"## {labels['sources']}", ""]

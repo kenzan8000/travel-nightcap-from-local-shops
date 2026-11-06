@@ -129,10 +129,6 @@
       "images": ["https://commons.wikimedia.org/wiki/Special:FilePath/Salmiakki_candies.jpg?width=480"]
     }
   ],
-  "shop_phrases": [
-    {"phrase": "Missä on olutta?", "pronunciation": "MIS-sa on OH-lut-ta", "meaning": "Where is the beer?"},
-    {"phrase": "Kiitos", "pronunciation": "KEE-tos", "meaning": "Thank you"}
-  ],
   "sources": [
     {
       "url": "https://example.com/helsinki-supermarket-beer",
