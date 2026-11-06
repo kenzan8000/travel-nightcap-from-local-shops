@@ -227,8 +227,12 @@ python3 scripts/render_nightcap.py /tmp/travel-nightcap-<slug>.json
 It prints Markdown to stdout and warnings to stderr. It:
 
 - tries each `images` URL in order the way a chat app would embed it (from another
-  site, following redirects), keeps the first that passes the rules above, and
-  outputs its final direct URL;
+  site, following redirects) and keeps the first that passes the rules above;
+- rewrites that photo to a `https://camo.githubusercontent.com/...` URL through
+  GitHub's Markdown API. Cursor's web and mobile apps only show chat images from an
+  allowlist of hosts, and GitHub's image proxy is on it; other image hosts only show
+  in the desktop app. Set `GITHUB_TOKEN` or `GH_TOKEN` to raise GitHub's rate limit;
+  without one it allows 60 requests an hour;
 - computes grams of pure alcohol per container (`ml × ABV / 100 × 0.789`) and drinks
   of 10 g;
 - leaves out items with no used source, and warns about unknown `pairs_with` ids.
@@ -242,7 +246,9 @@ tool, remove the ones that do not show the item, and rerun with `--no-check-imag
 ### Without the script (manual path)
 
 1. Open each image URL; keep the first that shows the right item and follows the
-   rules in Photos. Use the final URL after any redirect.
+   rules in Photos. Use the final URL after any redirect. Then send
+   `{"text": "![](<url>)", "mode": "gfm"}` as a POST to `https://api.github.com/markdown`
+   and use the `camo.githubusercontent.com` URL from the `<img src="...">` it returns.
 2. For each drink size, compute `ml × ABV / 100 × 0.789` grams, rounded, and divide by
    10 for drinks. For a style use the low and high ABV.
 3. Write the Markdown in the layout of Step 8. Escape `(`, `)` and spaces in URLs as

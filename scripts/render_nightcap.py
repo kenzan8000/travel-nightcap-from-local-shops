@@ -2,7 +2,8 @@
 """Render a nightcap list (local drinks and snacks) from JSON to Markdown.
 
 Checks each item's image candidates in order and keeps the first one that loads
-as an image, computes grams of pure alcohol per container, and prints Markdown
+as an image, rewrites it to a GitHub image proxy URL so Cursor's web and mobile
+apps show it, computes grams of pure alcohol per container, and prints Markdown
 for the chat. Warnings go to stderr.
 
 Usage:
@@ -15,6 +16,8 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import json
+import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -35,6 +38,7 @@ IMAGE_REQUEST_HEADERS = {
 }
 EMBEDDABLE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 MAX_IMAGE_BYTES = 1_500_000
+GITHUB_MARKDOWN_API = "https://api.github.com/markdown"
 
 DEFAULT_LABELS = {
     "buying_rules": "Buying rules",
@@ -167,7 +171,30 @@ def check_image(url: str, timeout: float) -> tuple[str, str, str]:
         return "unreachable", url, "could not be reached"
 
 
-def choose_images(items: list[dict], check: bool, timeout: float) -> dict[str, str | None]:
+def github_proxy_url(url: str, timeout: float) -> str | None:
+    """Return GitHub's camo proxy URL for an image, or None if GitHub can't be reached.
+
+    Cursor's web and mobile apps only load chat images from an allowlist of hosts,
+    which includes camo.githubusercontent.com. GitHub's Markdown API rewrites image
+    URLs to signed camo URLs without uploading anything.
+    """
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "travel-nightcap-from-local-shops"}
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    body = json.dumps({"text": f"![]({md_url(url)})", "mode": "gfm"}).encode()
+    request = urllib.request.Request(GITHUB_MARKDOWN_API, data=body, headers=headers)
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            html = response.read().decode("utf-8", "replace")
+    except (urllib.error.URLError, TimeoutError, OSError) as error:
+        warn(f"GitHub Markdown API failed ({error}); photos will only show in the desktop app")
+        return None
+    match = re.search(r'<img src="(https://camo\.githubusercontent\.com/[^"]+)"', html)
+    return match.group(1) if match else None
+
+
+def choose_images(items: list[dict], check: bool, proxy: bool, timeout: float) -> dict[str, str | None]:
     chosen: dict[str, str | None] = {}
     if not check:
         for item in items:
@@ -180,9 +207,18 @@ def choose_images(items: list[dict], check: bool, timeout: float) -> dict[str, s
         for url in item.get("images") or []:
             result, final_url, reason = check_image(url, timeout)
             results.append(result)
-            if result == "ok":
+            if result != "ok":
+                warn(f"{item['id']}: image rejected ({reason}): {url}")
+                continue
+            if not proxy:
                 return final_url, results
-            warn(f"{item['id']}: image rejected ({reason}): {url}")
+            camo_url = github_proxy_url(final_url, timeout)
+            if camo_url is None:
+                return final_url, results
+            camo_result, _, camo_reason = check_image(camo_url, timeout)
+            if camo_result == "ok":
+                return camo_url, results
+            warn(f"{item['id']}: GitHub's image proxy can't load it ({camo_reason}): {url}")
         return None, results
 
     all_results: list[str] = []
@@ -327,7 +363,7 @@ def keep_items(items: list[dict], used_urls: set[str], kind: str) -> list[dict]:
     return kept
 
 
-def render(data: dict, check_images: bool, timeout: float) -> str:
+def render(data: dict, check_images: bool, proxy_images: bool, timeout: float) -> str:
     labels = {**DEFAULT_LABELS, **(data.get("labels") or {})}
     sources = data.get("sources") or []
     used = [s for s in sources if s.get("status") == "used" and s.get("url")]
@@ -337,7 +373,7 @@ def render(data: dict, check_images: bool, timeout: float) -> str:
     drinks = keep_items(data.get("drinks") or [], set(source_numbers), "drinks")
     snacks = keep_items(data.get("snacks") or [], set(source_numbers), "snacks")
     names_by_id = {item["id"]: item["name"] for item in drinks + snacks}
-    images = choose_images(drinks + snacks, check_images, timeout)
+    images = choose_images(drinks + snacks, check_images, proxy_images, timeout)
 
     out: list[str] = []
 
@@ -392,13 +428,17 @@ def main() -> int:
     parser.add_argument("input", help="nightcap list JSON")
     parser.add_argument("-o", "--output", help="write Markdown here instead of stdout")
     parser.add_argument("--no-check-images", action="store_true", help="use the first image candidate unchecked")
+    parser.add_argument(
+        "--no-proxy", action="store_true",
+        help="output original image URLs instead of GitHub proxy URLs (photos then show only in the desktop app)",
+    )
     parser.add_argument("--timeout", type=float, default=8.0, help="seconds per image request (default 8)")
     args = parser.parse_args()
 
     with open(args.input, encoding="utf-8") as f:
         data = json.load(f)
 
-    markdown = render(data, not args.no_check_images, args.timeout)
+    markdown = render(data, not args.no_check_images, not args.no_proxy, args.timeout)
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(markdown)

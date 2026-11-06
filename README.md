@@ -67,6 +67,10 @@ Options:
 
 - `-o list.md`: write the Markdown to a file instead of stdout
 - `--no-check-images`: use the first image URL without checking it
+- `--no-proxy`: keep the original image URLs instead of GitHub image proxy URLs.
+  Cursor's web and mobile apps only show images from allowlisted hosts such as
+  `camo.githubusercontent.com`, so without the proxy photos show only on desktop.
+  `GITHUB_TOKEN` or `GH_TOKEN` raises GitHub's limit of 60 requests an hour.
 - `--timeout 8`: seconds per image request
 
 The sample's source URLs are `example.com` placeholders and its prices are
